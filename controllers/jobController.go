@@ -34,8 +34,14 @@ func CreateJob(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, utils.Response("User ID not found in context", nil))
 		return
 	}
-
-	userID, err := strconv.Atoi(userIDStr.(string))
+	userIDs, ok := userIDStr.(float64)
+	if !ok {
+		c.JSON(http.StatusBadRequest, utils.Response("interface error", nil))
+		return
+	}
+	userIdString := fmt.Sprintf("%v", userIDs)
+	fmt.Println("Value", userIdString)
+	userID, err := strconv.Atoi(userIdString)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, utils.Response("Invalid user ID", err.Error()))
 		return
@@ -69,28 +75,27 @@ func ApplyToJob(c *gin.Context) {
 	fmt.Println("Entering ApplyToJob controller")
 	// Get job_id from query parameters
 	jobIDStr := c.Query("job_id")
-    jobID, err := strconv.Atoi(jobIDStr)
-    if err != nil {
-        fmt.Println("Invalid job_id:", err)
-        c.JSON(http.StatusBadRequest, utils.Response("Invalid job_id", err.Error()))
-        return
-    }
+	jobID, err := strconv.Atoi(jobIDStr)
+	if err != nil {
+		fmt.Println("Invalid job_id:", err)
+		c.JSON(http.StatusBadRequest, utils.Response("Invalid job_id", err.Error()))
+		return
+	}
 	// Get user_id from context
-    userIDStr, exists := c.Get("user_id")
-    if !exists {
-        fmt.Println("User ID not found in context")
-        c.JSON(http.StatusUnauthorized, utils.Response("User ID not found in context", nil))
-        return
-    }
+	userIDStr, exists := c.Get("user_id")
+	if !exists {
+		fmt.Println("User ID not found in context")
+		c.JSON(http.StatusUnauthorized, utils.Response("User ID not found in context", nil))
+		return
+	}
 
-    userID, err := strconv.Atoi(userIDStr.(string))
-    if err != nil {
-        fmt.Println("Invalid user_id:", err)
-        c.JSON(http.StatusInternalServerError, utils.Response("Invalid user_id", err.Error()))
-        return
-    }
-	
-	
+	userID, err := strconv.Atoi(userIDStr.(string))
+	if err != nil {
+		fmt.Println("Invalid user_id:", err)
+		c.JSON(http.StatusInternalServerError, utils.Response("Invalid user_id", err.Error()))
+		return
+	}
+
 	// Call the service to apply for the job
 	if err := services.ApplyToJob(uint(jobID), uint(userID)); err != nil {
 		c.JSON(http.StatusInternalServerError, utils.Response("Database error", err.Error()))

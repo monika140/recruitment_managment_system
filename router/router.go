@@ -18,13 +18,14 @@ func SetupRouter() *gin.Engine {
 		authRoutes.DELETE("/:id", controllers.DeleteUser)
 	}
 
-    
 	applicant := r.Group("/applicant")
 	{
+		applicant.Use(middlewares.AuthMiddleware(), middlewares.ApplicantOnly())
 		applicant.GET("/jobs", controllers.ListJobs)
 		applicant.GET("/jobs/apply", controllers.ApplyToJob)
+		applicant.POST("/uploadResume", controllers.UploadResume)
 	}
-    
+
 	admin := r.Group("/admin")
 	{
 		admin.Use(middlewares.AuthMiddleware()) // Apply the middleware
